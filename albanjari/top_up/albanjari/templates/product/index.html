@@ -1,0 +1,25 @@
+{% extends 'base/layout.html' %}
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Available Products</h1>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for product in products %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.product_name }}</h5>
+                    <p class="card-text">{{ product.description }}</p>
+                    <a href="{% url 'package_list' product.product_id %}" class="btn btn-primary">View Packages</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="text-center">No products available</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

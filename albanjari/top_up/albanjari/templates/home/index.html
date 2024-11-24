@@ -1,0 +1,33 @@
+{% extends 'base/layout.html' %}
+{% block title %}Homepage{% endblock %}
+
+{% block content %}
+<div class="hero bg-light p-5 rounded-lg mb-4">
+    <h1 class="display-4">Welcome to Top Up Albanjari</h1>
+    <p class="lead">Your trusted gaming top-up platform</p>
+</div>
+
+<div class="container">
+    {% for category in categories %}
+        <h1>{{ category.category_name }}</h1> <!-- Display category name -->
+
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for product in category.product_set.all %}
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.product_name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.product_name }}</h5>
+                            <p class="card-text">{{ product.description }}</p>
+                            {% comment %} <a href="{% url 'product_detail' product.id %}" class="btn btn-primary">View Product</a> {% endcomment %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No products available in this category.</p>
+            {% endfor %}
+        </div>
+        <hr> <!-- Separator between categories -->
+    {% endfor %}
+</div>
+{% endblock %}
