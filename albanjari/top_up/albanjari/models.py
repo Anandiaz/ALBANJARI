@@ -4,7 +4,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import Group
 
-# User Profile Model
 class UserProfile(models.Model):
     ROLE_CHOICES = (
         ('ADMIN', 'Admin'),
@@ -17,7 +16,7 @@ class UserProfile(models.Model):
     phone_number = models.CharField(max_length=15, blank=True)
     email = models.EmailField()
 
-    def _str(self):  # Fixed the method name from _str to _str_
+    def _str(self): 
         return f"{self.user.username} - {self.role}"
 
     def save(self, *args, **kwargs):
@@ -25,13 +24,11 @@ class UserProfile(models.Model):
         super().save(*args, **kwargs)
         
         if is_new:
-            # Ensure user is in the correct group
             group_name = self.role.capitalize()
             group, _ = Group.objects.get_or_create(name=group_name)
-            self.user.groups.clear()  # Remove from other groups
+            self.user.groups.clear()
             self.user.groups.add(group)
 
-# Category Model
 class Category(models.Model):
     category_id = models.AutoField(primary_key=True)
     category_name = models.CharField(max_length=100)
@@ -39,7 +36,6 @@ class Category(models.Model):
     def str(self):
         return self.category_name
 
-# Product Model
 class Product(models.Model):
     product_id = models.AutoField(primary_key=True)
     product_name = models.CharField(max_length=200)
@@ -50,7 +46,6 @@ class Product(models.Model):
     def str(self):
         return self.product_name
 
-# Top-Up Package Model
 class TopUpPackage(models.Model):
     package_id = models.AutoField(primary_key=True)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -62,7 +57,6 @@ class TopUpPackage(models.Model):
     def str(self):
         return f"{self.product.product_name} - {self.package_name}"
 
-# Transaction Model
 class Transaction(models.Model):
     STATUS_CHOICES = [
         ('PENDING', 'Pending'),
@@ -82,7 +76,6 @@ class Transaction(models.Model):
     def str(self):
         return f"Transaction {self.transaction_id} - {self.user.username}"
 
-# Payment Model
 class Payment(models.Model):
     PAYMENT_STATUS_CHOICES = [
         ('PENDING', 'Pending'),
@@ -99,7 +92,6 @@ class Payment(models.Model):
     def str(self):
         return f"Payment {self.payment_id} - Transaction {self.transaction.transaction_id}"
 
-# Signal untuk handle user creation dan role assignment
 @receiver(post_save, sender=UserProfile)
 def create_user_for_profile(sender, instance, created, **kwargs):
     if created:
@@ -112,7 +104,6 @@ def create_user_for_profile(sender, instance, created, **kwargs):
             instance.user = user
             instance.save()
 
-        # Menambahkan user ke grup berdasarkan role
         group_name = instance.role.capitalize()
         group, _ = Group.objects.get_or_create(name=group_name)
         instance.user.groups.add(group)

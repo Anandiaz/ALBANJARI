@@ -2,8 +2,9 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User, Group
 from .models import Product, TopUpPackage, Transaction, Payment, UserProfile
+from django.contrib.auth.forms import AuthenticationForm
 
-# Custom User Registration Form
+
 class RegistrationForm(UserCreationForm):
     ROLE_CHOICES = (
         ('PLAYER', 'Player'),
@@ -24,8 +25,7 @@ class RegistrationForm(UserCreationForm):
         
         if commit:
             user.save()
-            
-            # Create UserProfile
+           
             profile = UserProfile.objects.create(
                 user=user,
                 role=self.cleaned_data['role'],
@@ -33,33 +33,41 @@ class RegistrationForm(UserCreationForm):
                 email=self.cleaned_data['email']
             )
             
-            # Add user to appropriate group
             group_name = self.cleaned_data['role'].capitalize()
             group, _ = Group.objects.get_or_create(name=group_name)
             user.groups.add(group)
 
         return user
 
-# Product Form
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ['product_name', 'description', 'category', 'image']
 
-# TopUpPackage Form
 class TopUpPackageForm(forms.ModelForm):
     class Meta:
         model = TopUpPackage
         fields = ['product', 'package_name', 'amount', 'price', 'agent_price']
 
-# Transaction Form
 class TransactionForm(forms.ModelForm):
     class Meta:
         model = Transaction
-        fields = ['package', 'transaction_proof']
+        fields = ['transaction_proof']
+        widgets = {
+            'transaction_proof': forms.FileInput(attrs={'class': 'form-control'})
+        }
 
-# Payment Form
 class PaymentForm(forms.ModelForm):
     class Meta:
         model = Payment
         fields = ['payment_method']
+
+class CustomAuthenticationForm(AuthenticationForm):
+    """Custom authentication form"""
+    def _init_(self, *args, **kwargs):
+        super()._init_(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password'].widget.attrs.update({'class': 'form-control'})
+
+    def get_user(self):
+        return self.user_cache

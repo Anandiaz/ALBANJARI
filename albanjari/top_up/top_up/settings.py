@@ -27,7 +27,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_URL = 'login'  # URL untuk halaman login
+LOGIN_REDIRECT_URL = 'homepage'  # Redirect setelah login sukses
+LOGOUT_REDIRECT_URL = 'homepage'  # Redirect setelah logout
 
 # Application definition
 
@@ -133,3 +135,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

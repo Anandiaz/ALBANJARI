@@ -1,28 +1,83 @@
 {% extends 'base/layout.html' %}
-{% block title %}Create Transaction{% endblock %}
+{% load django_bootstrap5 %}
+
+{% block title %}Create Transaction - {{ package.package_name }}{% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="d-flex align-items-center justify-content-between">
-        <h1>Create Transaction</h1>
-        <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Back</a>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="h4 mb-0">Purchase Confirmation</h2>
+                </div>
+                <div class="card-body">
+                    <!-- User Details -->
+                    <div class="mb-4">
+                        <h3 class="h5">Customer Details</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Username:</strong> {{ user.username }}</p>
+                                <p><strong>Email:</strong> {{ user.email }}</p>
+                                {% if user.userprofile.phone_number %}
+                                    <p><strong>Phone:</strong> {{ user.userprofile.phone_number }}</p>
+                                {% endif %}
+                                <p><strong>Account Type:</strong> {{ user.groups.all.0.name }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Package Details -->
+                    <div class="mb-4">
+                        <h3 class="h5">Package Details</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Product:</strong> {{ package.product.product_name }}</p>
+                                <p><strong>Package:</strong> {{ package.package_name }}</p>
+                                <p><strong>Amount:</strong> {{ package.amount }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                {% if is_agent %}
+                                    <p><strong>Original Price:</strong> <span class="text-decoration-line-through">Rp {{ package.price|floatformat:0 }}</span></p>
+                                    <p><strong>Agent Price:</strong> <span class="text-success">Rp {{ package.agent_price|floatformat:0 }}</span></p>
+                                    <p><strong>You Save:</strong> <span class="text-success">Rp {{ package.savings|floatformat:0 }}</span></p>
+                                {% else %}
+                                    <p><strong>Price:</strong> Rp {{ package.price|floatformat:0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Form -->
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Payment Information -->
+                        <div class="mb-4">
+                            <h3 class="h5">Payment Information</h3>
+                            <div class="alert alert-info">
+                                <p class="mb-1"><strong>Bank Transfer Details:</strong></p>
+                                <p class="mb-1">Bank: BRI</p>
+                                <p class="mb-1">Account Number: 123456789</p>
+                                <p class="mb-0">Account Name: {{ user.username }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Upload Payment Proof -->
+                        <div class="mb-4">
+                            <h3 class="h5">Upload Payment Proof</h3>
+                            {% bootstrap_field form.transaction_proof %}
+                            <small class="text-muted">Please upload a screenshot or photo of your payment proof.</small>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'package_list' package.product.product_id %}" class="btn btn-outline-secondary">Back</a>
+                            <button type="submit" class="btn btn-primary">Confirm Purchase</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    
-    <form method="POST" enctype="multipart/form-data" class="needs-validation">
-        {% csrf_token %}
-        
-        <div class="mb-3">
-            <label class="form-label">Package</label>
-            <input type="text" class="form-control" value="{{ form.package.name }}" readonly>
-        </div>
-        
-        <div class="mb-3">
-            <label class="form-label">Upload Payment Proof</label>
-            <input type="file" class="form-control" name="transaction_proof" required>
-            <div class="invalid-feedback">{{ form.transaction_proof.errors }}</div>
-        </div>
-        
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
 </div>
 {% endblock %}

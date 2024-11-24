@@ -1,0 +1,75 @@
+{% extends 'base/layout.html' %}
+{% load django_bootstrap5 %}
+
+{% block title %}Agent Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Agent Dashboard</h1>
+    
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Earnings</h5>
+                    <h3 class="card-text">Rp {{ total_earnings|floatformat:0 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Agent Discount</h5>
+                    <h3 class="card-text">10%</h3>
+                    <small>On all packages</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Transaction History Section -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h5 mb-0">Transaction History</h2>
+        </div>
+        <div class="card-body">
+            {% if transactions %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Package</th>
+                                <th>Original Price</th>
+                                <th>Discounted Price</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                            <tr>
+                                <td>{{ transaction.transaction_date|date:"d M Y" }}</td>
+                                <td>{{ transaction.package.package_name }}</td>
+                                <td>Rp {{ transaction.package.price|floatformat:0 }}</td>
+                                <td>Rp {{ transaction.total_price|floatformat:0 }}</td>
+                                <td>
+                                    <span class="badge {% if transaction.status == 'PENDING' %}bg-warning
+                                                      {% elif transaction.status == 'COMPLETED' %}bg-success
+                                                      {% elif transaction.status == 'FAILED' %}bg-danger
+                                                      {% endif %}">
+                                        {{ transaction.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-center">No transactions found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
