@@ -1,0 +1,52 @@
+{% extends 'base/layout.html' %}
+{% load django_bootstrap5 %}
+
+{% block title %}Player Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Player Dashboard</h1>
+    
+    <!-- Transaction History Section -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Transaction History</h2>
+        </div>
+        <div class="card-body">
+            {% if transactions %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Package</th>
+                                <th>Total Price</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                            <tr>
+                                <td>{{ transaction.created_at|date:"d M Y" }}</td>
+                                <td>{{ transaction.package.product_name }}</td>
+                                <td>Rp {{ transaction.total_price|floatformat:0 }}</td>
+                                <td>
+                                    <span class="badge {% if transaction.status == 'PENDING' %}bg-warning
+                                                      {% elif transaction.status == 'COMPLETED' %}bg-success
+                                                      {% elif transaction.status == 'FAILED' %}bg-danger
+                                                      {% endif %}">
+                                        {{ transaction.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-center">No transactions found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User, Group
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib.auth.models import Group
 
 # User Profile Model
 class UserProfile(models.Model):
@@ -14,35 +15,28 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='PLAYER')
     phone_number = models.CharField(max_length=15, blank=True)
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
 
-    def __str__(self):
+    def _str(self):  # Fixed the method name from _str to _str_
         return f"{self.user.username} - {self.role}"
 
-# Signal to handle user creation and role assignment
-@receiver(post_save, sender=UserProfile)
-def create_user_for_profile(sender, instance, created, **kwargs):
-    if created:
-        if not instance.user_id:
-            user = User.objects.create_user(
-                username=instance.email,  # Menggunakan email sebagai username
-                email=instance.email,
-                password=instance.phone_number  # Menggunakan nomor telepon sebagai password awal
-            )
-            instance.user = user
-            instance.save()
-
-        # Menambahkan user ke grup berdasarkan role
-        group_name = instance.role.capitalize()
-        group, _ = Group.objects.get_or_create(name=group_name)
-        instance.user.groups.add(group)
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        if is_new:
+            # Ensure user is in the correct group
+            group_name = self.role.capitalize()
+            group, _ = Group.objects.get_or_create(name=group_name)
+            self.user.groups.clear()  # Remove from other groups
+            self.user.groups.add(group)
 
 # Category Model
 class Category(models.Model):
     category_id = models.AutoField(primary_key=True)
     category_name = models.CharField(max_length=100)
 
-    def __str__(self):
+    def str(self):
         return self.category_name
 
 # Product Model
@@ -53,7 +47,7 @@ class Product(models.Model):
     image = models.ImageField(upload_to='products_images/', null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
-    def __str__(self):
+    def str(self):
         return self.product_name
 
 # Top-Up Package Model
@@ -65,7 +59,7 @@ class TopUpPackage(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     agent_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
-    def __str__(self):
+    def str(self):
         return f"{self.product.product_name} - {self.package_name}"
 
 # Transaction Model
@@ -85,7 +79,7 @@ class Transaction(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     transaction_proof = models.ImageField(upload_to='transaction_proofs/', null=True, blank=True)
 
-    def __str__(self):
+    def str(self):
         return f"Transaction {self.transaction_id} - {self.user.username}"
 
 # Payment Model
@@ -102,5 +96,23 @@ class Payment(models.Model):
     payment_date = models.DateTimeField(auto_now_add=True)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='PENDING')
 
-    def __str__(self):
+    def str(self):
         return f"Payment {self.payment_id} - Transaction {self.transaction.transaction_id}"
+
+# Signal untuk handle user creation dan role assignment
+@receiver(post_save, sender=UserProfile)
+def create_user_for_profile(sender, instance, created, **kwargs):
+    if created:
+        if not instance.user_id:
+            user = User.objects.create_user(
+                username=instance.email,
+                email=instance.email,
+                password=instance.phone_number
+            )
+            instance.user = user
+            instance.save()
+
+        # Menambahkan user ke grup berdasarkan role
+        group_name = instance.role.capitalize()
+        group, _ = Group.objects.get_or_create(name=group_name)
+        instance.user.groups.add(group)

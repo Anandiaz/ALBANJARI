@@ -1,11 +1,29 @@
 {% extends 'base/layout.html' %}
+{% load django_bootstrap5 %}
+
 {% block title %}Register{% endblock %}
+
 {% block content %}
-<h2>Register</h2>
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Register</button>
-</form>
-<a href="{% url 'login' %}" class="btn btn-link">Already have an account? Login here</a>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center">Register</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    {% bootstrap_form form %}
+                    
+                    <div class="d-grid gap-2">
+                        {% bootstrap_button "Register" button_type="submit" button_class="btn-primary" %}
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-0">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
