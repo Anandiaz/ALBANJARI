@@ -18,7 +18,7 @@ urlpatterns = [
     
     # Product and Package URLs
     path('products/', views.product_list, name='product_list'),
-    # path('products/<int:product_id>/packages/', views.package_list, name='package_list'),
+    path('products/<int:product_id>/packages/', views.package_list, name='package_list'),
     
     # Transaction URLs
     path('transactions/create/<int:package_id>/', views.create_transaction, name='create_transaction'),
