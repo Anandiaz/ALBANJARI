@@ -33,6 +33,25 @@ LOGOUT_REDIRECT_URL = 'homepage'  # Redirect setelah logout
 
 # Application definition
 
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",
+    "social_core.backends.facebook.FacebookOAuth2",
+    "social_core.backends.google.GoogleOAuth2",
+    'social_core.backends.twitter.TwitterOAuth',
+)
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'albanjari.pipelines.create_user_profile',  # Add your custom pipeline here
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+)
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -43,6 +62,7 @@ INSTALLED_APPS = [
     'albanjari',
     'django_bootstrap5',
     'django_seed',
+    "social_django",
 ]
 
 MIDDLEWARE = [
@@ -53,6 +73,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "social_django.middleware.SocialAuthExceptionMiddleware",
 ]
 
 ROOT_URLCONF = 'top_up.urls'
@@ -136,3 +157,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "753562472109-g8c2n6t8os60jtbnik2llv5qc6l15drn.apps.googleusercontent.com" # Google Consumer Key
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "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" # Google Consumer Secret

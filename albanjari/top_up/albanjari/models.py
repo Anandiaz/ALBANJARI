@@ -3,6 +3,7 @@ from django.contrib.auth.models import User, Group
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.models import Group
+from django.contrib.auth.models import User, Group
 
 class UserProfile(models.Model):
     ROLE_CHOICES = (
@@ -16,7 +17,7 @@ class UserProfile(models.Model):
     phone_number = models.CharField(max_length=15, blank=True)
     email = models.EmailField()
 
-    def _str(self): 
+    def __str__(self): 
         return f"{self.user.username} - {self.role}"
 
     def save(self, *args, **kwargs):
