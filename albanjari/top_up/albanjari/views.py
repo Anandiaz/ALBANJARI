@@ -15,7 +15,8 @@ from .forms import (
     TransactionForm, 
     PaymentForm, 
     RegistrationForm,
-    CustomAuthenticationForm  
+    CustomAuthenticationForm,
+    TopUpPackageInlineForm
 )
 from django.contrib.auth import authenticate, login
 
@@ -185,14 +186,39 @@ def product_create(request):
         'form': form,
         'is_admin': True
     })
+
+@login_required
+@user_passes_test(is_admin)
+def package_update(request, package_id):
+    package = get_object_or_404(TopUpPackage, package_id=package_id)
+    
+    if request.method == 'POST':
+        form = TopUpPackageInlineForm(request.POST, instance=package)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Package updated successfully!')
+        return redirect('product_update', product_id=package.product.product_id)
+    
+    return redirect('product_update', product_id=package.product.product_id)
+
 @login_required
 @user_passes_test(is_admin)
 def product_update(request, product_id):
     product = get_object_or_404(Product, product_id=product_id)
+    packages = TopUpPackage.objects.filter(product=product)
+    package_form = TopUpPackageInlineForm()  # Initialize form here, outside if/else
     
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
-        if form.is_valid():
+        if 'add_package' in request.POST:
+            package_form = TopUpPackageInlineForm(request.POST)
+            if package_form.is_valid():
+                package = package_form.save(commit=False)
+                package.product = product
+                package.save()
+                messages.success(request, 'Package added successfully!')
+                return redirect('product_update', product_id=product_id)
+        elif form.is_valid():
             form.save()
             messages.success(request, 'Product updated successfully!')
             return redirect('dashboard_admin')
@@ -201,9 +227,24 @@ def product_update(request, product_id):
     
     return render(request, 'product/update.html', {
         'form': form,
+        'package_form': package_form,
         'product': product,
+        'packages': packages,
         'is_admin': True
     })
+
+@login_required
+@user_passes_test(is_admin)
+def package_delete(request, package_id):
+    package = get_object_or_404(TopUpPackage, package_id=package_id)
+    product_id = package.product.product_id
+    
+    if request.method == 'POST':
+        package.delete()
+        messages.success(request, 'Package deleted successfully!')
+        return redirect('product_update', product_id=product_id)
+    
+    return redirect('product_update', product_id=product_id)
 
 @login_required
 @user_passes_test(is_admin)

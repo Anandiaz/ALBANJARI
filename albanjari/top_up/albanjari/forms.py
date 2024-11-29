@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User, Group
 from .models import Product, TopUpPackage, Transaction, Payment, UserProfile
 from django.contrib.auth.forms import AuthenticationForm
+from .models import TopUpPackage
 
 
 class RegistrationForm(UserCreationForm):
@@ -61,6 +62,11 @@ class PaymentForm(forms.ModelForm):
     class Meta:
         model = Payment
         fields = ['payment_method']
+        
+class TopUpPackageInlineForm(forms.ModelForm):
+    class Meta:
+        model = TopUpPackage
+        fields = ['package_name', 'amount', 'price', 'agent_price']
 
 class CustomAuthenticationForm(AuthenticationForm):
     """Custom authentication form"""

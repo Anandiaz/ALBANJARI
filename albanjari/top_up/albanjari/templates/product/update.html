@@ -1,26 +1,133 @@
 {% extends 'base/layout.html' %}
 {% load django_bootstrap5 %}
 
-{% block title %}Update Product{% endblock %}
-
 {% block content %}
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="h4 mb-0">Update Product</h2>
-                </div>
-                <div class="card-body">
-                    <form method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {% bootstrap_form form %}
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'dashboard_admin' %}" class="btn btn-secondary">Back</a>
-                            <button type="submit" class="btn btn-primary">Update Product</button>
+    <h1 class="mb-4">Update Product</h1>
+    
+    <!-- Product Update Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Product Details</h2>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                <button type="submit" class="btn btn-primary">Update Product</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Packages Management -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h5 mb-0">Packages</h2>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addPackageModal">
+                Add Package
+            </button>
+        </div>
+        <div class="card-body">
+            {% if packages %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Package Name</th>
+                            <th>Amount</th>
+                            <th>Price</th>
+                            <th>Agent Price</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for package in packages %}
+                        <tr>
+                            <td>{{ package.package_name }}</td>
+                            <td>{{ package.amount }}</td>
+                            <td>{{ package.price }}</td>
+                            <td>{{ package.agent_price }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editPackageModal{{ package.package_id }}">
+                                    Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deletePackageModal{{ package.package_id }}">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Edit Package Modal -->
+                        <div class="modal fade" id="editPackageModal{{ package.package_id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <form method="post" action="{% url 'package_update' package.package_id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Edit Package</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            {% bootstrap_form package_form %}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                    </form>
-                </div>
+
+                        <!-- Delete Package Modal -->
+                        <div class="modal fade" id="deletePackageModal{{ package.package_id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Delete Package</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure you want to delete package "{{ package.package_name }}"?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <form method="post" action="{% url 'package_delete' package.package_id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-center">No packages found for this product.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Add Package Modal -->
+    <div class="modal fade" id="addPackageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New Package</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% bootstrap_form package_form %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" name="add_package" class="btn btn-primary">Add Package</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
