@@ -135,12 +135,21 @@ def product_list(request):
         messages.error(request, "You don't have permission to view products.")
         return redirect('homepage')
     
-    products = Product.objects.all()
+    # Get the search query from the request
+    query = request.GET.get('q', '')
+    
+    # Filter products based on the search query
+    if query:
+        products = Product.objects.filter(Q(product_name__icontains=query) | Q(description__icontains=query))
+    else:
+        products = Product.objects.all() 
     context = {
         'products': products,
+        'query': query,  
         'is_agent': is_agent(request.user),
         'is_admin': is_admin(request.user)  
     }
+    
     return render(request, 'product/index.html', context)
 
 @login_required
